@@ -2,5 +2,5 @@ CC = $(CROSS_COMPILE)gcc
 all:
 		$(CC) writer.c -o writer
 writer: writer.c
-	clean:
+clean:
 		rm -f writer.o writer
