@@ -94,8 +94,11 @@ ${CROSS_COMPILE}readelf -a ${OUTDIR}/rootfs/bin/busybox | grep "program interpre
 ${CROSS_COMPILE}readelf -a ${OUTDIR}/rootfs/bin/busybox | grep "Shared library"
 
 # TODO: Add library dependencies to rootfs - Linux Root Filesystems Slide 15 - Finished
-cp  -r /toolchain/gcc-arm-10.2-2020.11-x86_64-aarch64-none-linux-gnu/lib/     ${OUTDIR}/rootfs
-cp  -r /toolchain/gcc-arm-10.2-2020.11-x86_64-aarch64-none-linux-gnu/lib64/   ${OUTDIR}/rootfs
+# cp  -r /toolchain/gcc-arm-10.2-2020.11-x86_64-aarch64-none-linux-gnu/lib/     ${OUTDIR}/rootfs
+# cp  -r /toolchain/gcc-arm-10.2-2020.11-x86_64-aarch64-none-linux-gnu/lib64/   ${OUTDIR}/rootfs
+cd $(pwd)
+cp -r ./lib/* ${OUTDIR}/rootfs/lib/
+cp -r ./lib64/* %{OUTDIR}/rootfs/lib64/
 echo "Dependencies added to rootfs"
 
 # TODO: Make device nodes - Linux Root Filesystems Slide 16 - Finished
