@@ -129,4 +129,4 @@ find . | cpio -H newc -ov --owner root:root > ${OUTDIR}/initramfs.cpio
 cd ..
 gzip -f initramfs.cpio
 cp initramfs.cpio.gz ${OUTDIR}/Image/
-echo "All done!!"
+echo "All done!!!"
