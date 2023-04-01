@@ -107,7 +107,6 @@ echo "Finished making device nodes"
 
 # TODO: Clean and build the writer utility - Embedded Linux Toolchain Slide 20 - Finished
 cd "${FINDER_APP_DIR}"
-touch crank.txt
 make clean
 make CROSS_COMPILE=aarch64-none-linux-gnu-
 echo "Finished clean & build of writer utility"
@@ -130,6 +129,5 @@ echo "Finished chown"
 # TODO: Create initramfs.cpio.gz - Finished
 find . | cpio -H newc -ov --owner root:root > ${OUTDIR}/initramfs.cpio
 cd ..
-gzip -f initramfs.cpio
-cp initramfs.cpio.gz ${OUTDIR}/Image/
+gzip -f ${OUTDIR}/initramfs.cpio
 echo "All done!!!"
