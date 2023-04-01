@@ -106,7 +106,8 @@ sudo mknod -m 666 ${OUTDIR}/rootfs/dev/console c 5 1
 echo "Finished making device nodes"
 
 # TODO: Clean and build the writer utility - Embedded Linux Toolchain Slide 20 - Finished
-cd ${OUTDIR}/finder
+cd "${FINDER_APP_DIR}"
+touch crank.txt
 make clean
 make CROSS_COMPILE=aarch64-none-linux-gnu-
 echo "Finished clean & build of writer utility"
