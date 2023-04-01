@@ -46,11 +46,18 @@ if [ ! -e ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ]; then
     echo "Finished Defconfig"
     # build - vmlinux Slide 14
     make -j4 ARCH=arm64 CROSS_COMPILE=aarch64-none-linux-gnu- all
-   echo "Finished Vmlinux" 
+    echo "Finished Vmlinux" 
+    # build - modules Slide 15
+    make ARCH=arm64 CROSS_COMPILE=aarch64-none-linux-gnu- modules
+    echo "Finished Modules"
+    # build - devicetree Slide 15
+    make ARCH=arm64 CROSS_COMPILE=aarch64-none-linux-gnu- dtbs
+    echo "Finished Devicetree"
 
 fi
 
 echo "Adding the Image in outdir"
+cp ${OUTDIR}/linux-stable/arch/arm64/boot/Image ${OUTDIR}
 
 echo "Creating the staging directory for the root filesystem"
 cd "$OUTDIR"
@@ -72,7 +79,7 @@ mkdir -p var/log
 cd "$OUTDIR"
 if [ ! -d "${OUTDIR}/busybox" ]
 then
-git clone git://busybox.net/busybox.git
+    git clone git://busybox.net/busybox.git
     cd busybox
     git checkout ${BUSYBOX_VERSION}
 
@@ -115,9 +122,10 @@ echo "Finished clean & build of writer utility"
 # TODO: Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
 cp writer ${OUTDIR}/rootfs/home/
-cp finde*.sh ${OUTDIR}/rootfs/home/
+cp finder.sh ${OUTDIR}/rootfs/home/
+cp finder-test.sh ${OUTDIR}/rootfs/home/
 mkdir -p ${OUTDIR}/rootfs/home/conf
-cp conf/*.txt ${OUTDIR}/rootfs/home/conf/
+cp -r conf/ ${OUTDIR}/rootfs/home/
 cp autorun-qemu.sh ${OUTDIR}/rootfs/home/
 echo "Finished file copy"
 

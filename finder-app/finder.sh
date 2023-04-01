@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if [ "$#" = "0" ]; then
 	echo "Warning!!  Function requires 2 parameters.  [finder.sh filesdir searchstr]"
