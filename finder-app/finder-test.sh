@@ -61,7 +61,7 @@ do
 done
 
 OUTPUTSTRING=$(finder.sh "$WRITEDIR" "$WRITESTR")
-echo ${OUTPUTSTRING} | grep "${MATCHSTR}" > {WRITEFILE}
+echo ${OUTPUTSTRING} | grep "${MATCHSTR}" > ${WRITEFILE}
 
 # remove temporary directories
 rm -rf /tmp/aeld-data
