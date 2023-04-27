@@ -3,7 +3,7 @@
 // Added acceptance of multiple connections with each one hosted in
 //    a seperate thread.  Added a timestamp every 10 seconds which is
 //    hosted in its own thread.
-// References code from:
+// References code from: 
 // Linux System Programming
 // https://www.geeksforgeeks.org/socket-programming-cc/
 // https://beej.us/guide/bgnet/html/
