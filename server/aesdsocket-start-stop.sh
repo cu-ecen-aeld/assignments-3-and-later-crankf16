@@ -4,16 +4,17 @@
 
 case "$1" in
 	start)
+		echo "Start Socket Daemon"
 		start-stop-daemon -S -n aesdsocket -a /usr/bin/aesdsocket -- -d
 		;;
 
 	stop)
+		echo "Stop Socket Deamon"
 		start-stop-daemon -K -n aesdsocket
 		;;
 
 	*)
-		exit 1;
-		;;
+		exit 1
 
 esac
 
