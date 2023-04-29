@@ -101,12 +101,12 @@ void *timestamp(void *mutex)
     	
     	while (cleanShutdown == false)
     	{    	
-    		sleep(10);
     		time_t t = time(NULL);
     		struct tm *tm = localtime(&t);
     		char buf[94];
 
     		strftime(buf, sizeof(buf), "timestamp:%a, %d %b %y %T %z\n", tm);
+    		sleep(10);
     		
     		// Lock mutex for time
     		pthread_mutex_lock(mutex);

@@ -4,12 +4,12 @@
 
 case "$1" in
 	start)
-		echo "Start Socket Daemon"
+		echo "Start Crank Socket Daemon"
 		start-stop-daemon -S -n aesdsocket -a /usr/bin/aesdsocket -- -d
 		;;
 
 	stop)
-		echo "Stop Socket Deamon"
+		echo "Stop Crank Socket Deamon"
 		start-stop-daemon -K -n aesdsocket
 		;;
 
