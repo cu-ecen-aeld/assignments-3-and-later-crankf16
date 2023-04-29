@@ -3,7 +3,7 @@
 // Added acceptance of multiple connections with each one hosted in
 //    a seperate thread.  Added a timestamp every 10 seconds which is
 //    hosted in its own thread.
-// References code from: 
+// References code from:
 // Linux System Programming
 // https://www.geeksforgeeks.org/socket-programming-cc/
 // https://beej.us/guide/bgnet/html/
@@ -101,25 +101,25 @@ void *timestamp(void *mutex)
     	
     	while (cleanShutdown == false)
     	{    	
+    		sleep(10);
     		time_t t = time(NULL);
     		struct tm *tm = localtime(&t);
     		char buf[94];
 
     		strftime(buf, sizeof(buf), "timestamp:%a, %d %b %y %T %z\n", tm);
-    		sleep(1000);
     		
     		// Lock mutex for time
-//    		pthread_mutex_lock(mutex);
-//
-//    		// Write time to file
-//    		FILE *out_put;
-//    		out_put = fopen(OUTPUT_FILE, "a+");
-//
-//    		fputs(buf, out_put);   	
-//    		fclose(out_put);
+    		pthread_mutex_lock(mutex);
+
+    		// Write time to file
+    		FILE *out_put;
+    		out_put = fopen(OUTPUT_FILE, "a+");
+
+    		fputs(buf, out_put);   	
+    		fclose(out_put);
     	
     		// Unlock Mutex for time
-//    		pthread_mutex_unlock(mutex);
+    		pthread_mutex_unlock(mutex);
     		
     	}
     	return mutex;
@@ -137,6 +137,7 @@ int main(int argc, char **argv)
 	if (argc == 2 && strcmp(argv[1], "-d") == 0) 
 	{
 		daemon (0, 0); // LSP Page 174
+		syslog(LOG_INFO, "Begin Crank Daemon");
 	}
 
 
@@ -175,10 +176,10 @@ int main(int argc, char **argv)
     	// From Threading and Linked Lists Slide 10
     	SLIST_HEAD(slisthead, slist_data_s) head;
     	SLIST_INIT(&head);
-
-  	// Start timer thread
-  	pthread_t tsPthreadId;
-      	pthread_create(&tsPthreadId, NULL, timestamp, &mutex);
+    	
+    	// Start timer thread
+//  	pthread_t tsPthreadId;
+//    	pthread_create(&tsPthreadId, NULL, timestamp, &mutex);
                    		 
     	while (cleanShutdown == false)
     	{
@@ -207,14 +208,14 @@ int main(int argc, char **argv)
 		datap = malloc(sizeof(slist_data_t));
             	datap->pthreadId = pthreadId;
            	SLIST_INSERT_HEAD(&head, datap, entries);
-    }
+    	}
 
     	while (cleanShutdown)
     	{
         	close(socket_server);
         	// Close out timer thread
-        	pthread_cancel(tsPthreadId);
-        	pthread_join(tsPthreadId, EXIT_SUCCESS);
+//        	pthread_cancel(tsPthreadId);
+//        	pthread_join(tsPthreadId, EXIT_SUCCESS);
         	remove(OUTPUT_FILE);
         	exit(0);
     	}
