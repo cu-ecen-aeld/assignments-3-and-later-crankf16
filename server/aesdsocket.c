@@ -106,20 +106,20 @@ void *timestamp(void *mutex)
     		char buf[94];
 
     		strftime(buf, sizeof(buf), "timestamp:%a, %d %b %y %T %z\n", tm);
-    		sleep(10);
+    		sleep(1000);
     		
     		// Lock mutex for time
-    		pthread_mutex_lock(mutex);
-
-    		// Write time to file
-    		FILE *out_put;
-    		out_put = fopen(OUTPUT_FILE, "a+");
-
-    		fputs(buf, out_put);   	
-    		fclose(out_put);
+//    		pthread_mutex_lock(mutex);
+//
+//    		// Write time to file
+//    		FILE *out_put;
+//    		out_put = fopen(OUTPUT_FILE, "a+");
+//
+//    		fputs(buf, out_put);   	
+//    		fclose(out_put);
     	
     		// Unlock Mutex for time
-    		pthread_mutex_unlock(mutex);
+//    		pthread_mutex_unlock(mutex);
     		
     	}
     	return mutex;
