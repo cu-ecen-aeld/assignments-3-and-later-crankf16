@@ -150,6 +150,7 @@ void *timestamp(void *mutex)
 int main(int argc, char **argv)
 {
     	int socket_client; // New connection
+    	char client_ip4[INET_ADDRSTRLEN];
 
     	struct thread_data *thread_param;
     	pthread_mutex_t mutex;
@@ -202,8 +203,8 @@ int main(int argc, char **argv)
     	SLIST_INIT(&head);
 
   	// Start timer thread
-  	pthread_t tsPthreadId;
-    	pthread_create(&tsPthreadId, NULL, timestamp, &mutex);
+//  	pthread_t tsPthreadId;
+//    	pthread_create(&tsPthreadId, NULL, timestamp, &mutex);
     	
     	// Beej's 5.6
     	struct sockaddr_in client_addr; 
@@ -223,7 +224,6 @@ int main(int argc, char **argv)
         	    }
         	    
        	// Beej's 6.2 	    
-        	char client_ip4[INET_ADDRSTRLEN]; 
         	inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip4, INET_ADDRSTRLEN);        
         	syslog(LOG_INFO, "Accepted connection from %s", client_ip4);
 
@@ -255,8 +255,8 @@ int main(int argc, char **argv)
     	{
         	close(socket_server);
         	// Close out timer thread
-        	pthread_cancel(tsPthreadId);
-        	pthread_join(tsPthreadId, EXIT_SUCCESS);
+//        	pthread_cancel(tsPthreadId);
+//        	pthread_join(tsPthreadId, EXIT_SUCCESS);
         	remove(OUTPUT_FILE);
         	exit(0);
     	}
