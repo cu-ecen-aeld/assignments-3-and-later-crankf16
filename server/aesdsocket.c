@@ -181,7 +181,10 @@ int main(int argc, char **argv)
 	};
 	
 	// Beej's 5.3
-	bind(socket_server, (struct sockaddr *)&server_addr, sizeof(server_addr)); 
+	if (bind(socket_server, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+	{
+		syslog(LOG_ERR, "Error with bind");
+	} 
 
 	// Register signal_handler for SIGINT & SIGTERM // LSP Page 343
 	signal(SIGINT, signal_handler);
