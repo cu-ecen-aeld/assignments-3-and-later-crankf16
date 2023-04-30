@@ -71,6 +71,7 @@ void *threadFunc(void *thread_param)
     	// Receive the string
     	while ((byte_count = recv(thread_args->socket_client, buf, BUFFER_SIZE - 1, 0)) > 0)
     	{
+		syslog(LOG_INFO, "Read: %s", buf);
 		write(out_put, buf, byte_count);       
 		// Find the end of a packet
 		if (buf[byte_count - 1] == '\n') 
@@ -81,9 +82,12 @@ void *threadFunc(void *thread_param)
 
     	// Write the string back
     	lseek(out_put, 0, SEEK_SET);
-    	while ((byte_count = read(out_put, buf, BUFFER_SIZE)) > 0) 
+    	
+    	char *buf_read = (char *)malloc(BUFFER_SIZE);
+    	
+    	while ((byte_count = read(out_put, buf_read, BUFFER_SIZE)) > 0) 
     	{
-		int dang = send(thread_args->socket_client, buf, byte_count, 0);
+		int dang = send(thread_args->socket_client, buf_read, byte_count, 0);
 		if (byte_count == -1)
 		{
 		syslog(LOG_ERR, "Error reading");
@@ -98,7 +102,7 @@ void *threadFunc(void *thread_param)
 		}
 		else
 		{
-		syslog(LOG_INFO, "Sending Success");
+		syslog(LOG_INFO, "Sending:%s!", buf_read);
 		}
 		
     	}
