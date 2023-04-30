@@ -241,7 +241,14 @@ int main(int argc, char **argv)
 		datap = malloc(sizeof(slist_data_t));
             	datap->pthreadId = pthreadId;
            	SLIST_INSERT_HEAD(&head, datap, entries);
-           	pthread_join(datap->pthreadId, EXIT_SUCCESS);
+           	
+           	while (!SLIST_EMPTY(&head))
+           	{
+           		datap = SLIST_FIRST(&head);
+           		pthread_join(datap->pthreadId, EXIT_SUCCESS);
+           		SLIST_REMOVE_HEAD(&head, entries);
+           		free(datap);
+           	}
     }
 
     	while (cleanShutdown)
