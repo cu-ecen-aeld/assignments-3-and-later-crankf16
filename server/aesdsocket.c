@@ -1,7 +1,7 @@
 // Assignment 6 Part 1
 // Reworked version of Assignment 5 Part 1
 // Added acceptance of multiple connections with each one hosted in
-//    a seperate thread.  Added a timestamp every 10 seconds which is
+//    a seperate thread. Added a timestamp every 10 seconds which is
 //    hosted in its own thread.
 // References code from:
 // Linux System Programming
