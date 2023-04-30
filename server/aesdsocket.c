@@ -135,11 +135,10 @@ void *timestamp(void *mutex)
     		pthread_mutex_lock(mutex);
 
     		// Write time to file
-    		FILE *out_put;
-    		out_put = fopen(OUTPUT_FILE, "a+");
+    		int out_put = open(OUTPUT_FILE, O_RDWR | O_APPEND | O_CREAT, 0644);
 
-    		fputs(buf, out_put);   	
-    		fclose(out_put);
+    		write(out_put, buf, strlen(buf));   	
+    		close(out_put);
     	
     		// Unlock Mutex for time
     		pthread_mutex_unlock(mutex);
