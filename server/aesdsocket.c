@@ -60,6 +60,7 @@ void signal_handler(int signo)
 void *threadFunc(void *thread_param)
 {
     	int byte_count;          	// number of bytes received
+    	int byte_count_out;
     	char buf[BUFFER_SIZE]; 	// incoming buffer
     	thread_data *thread_args = (thread_data *)thread_param;
 
@@ -86,9 +87,9 @@ void *threadFunc(void *thread_param)
     	
     	char *buf_read = (char *)malloc(BUFFER_SIZE); // outgoing buffer
     	
-    	while ((byte_count = read(out_put, buf_read, BUFFER_SIZE)) > 0) 
+    	while ((byte_count_out = read(out_put, buf_read, BUFFER_SIZE)) > 0) 
     	{
-		int dang = send(thread_args->socket_client, buf_read, byte_count, 0);
+		int dang = send(thread_args->socket_client, buf_read, byte_count_out, 0);
 		if (byte_count == -1)
 		{
 		syslog(LOG_ERR, "Error reading");
@@ -200,7 +201,7 @@ int main(int argc, char **argv)
 
   	// Start timer thread
   	pthread_t tsPthreadId;
-      	pthread_create(&tsPthreadId, NULL, timestamp, &mutex);
+    	pthread_create(&tsPthreadId, NULL, timestamp, &mutex);
                    		 
     	while (cleanShutdown == false)
     	{
