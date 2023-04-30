@@ -60,13 +60,14 @@ void signal_handler(int signo)
 void *threadFunc(void *thread_param)
 {
     	int byte_count;          	// number of bytes received
-    	char buf[BUFFER_SIZE]; 	// socket receive buffer
+    	char buf[BUFFER_SIZE]; 	// incoming buffer
     	thread_data *thread_args = (thread_data *)thread_param;
 
     	int out_put = open(OUTPUT_FILE, O_RDWR | O_APPEND | O_CREAT, 0644);
 
     	// Mutex lock
     	pthread_mutex_lock(thread_args->mutex);
+    	lseek(out_put, 0, SEEK_END);
 
     	// Receive the string
     	while ((byte_count = recv(thread_args->socket_client, buf, BUFFER_SIZE - 1, 0)) > 0)
@@ -83,7 +84,7 @@ void *threadFunc(void *thread_param)
     	// Write the string back
     	lseek(out_put, 0, SEEK_SET);
     	
-    	char *buf_read = (char *)malloc(BUFFER_SIZE);
+    	char *buf_read = (char *)malloc(BUFFER_SIZE); // outgoing buffer
     	
     	while ((byte_count = read(out_put, buf_read, BUFFER_SIZE)) > 0) 
     	{
