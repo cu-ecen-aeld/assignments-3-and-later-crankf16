@@ -146,7 +146,7 @@ void *timestamp(void *mutex)
     		// Write time to file
     		int out_put = open(OUTPUT_FILE, O_RDWR | O_APPEND | O_CREAT, 0644);
 
-//    		write(out_put, buf, strlen(buf));   	
+    		write(out_put, buf, strlen(buf));   	
     		close(out_put);
     	
     		// Unlock Mutex for time
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
 {
     	int socket_client; // New connection
     	char client_ip4[INET_ADDRSTRLEN];
-//    	struct thread_data *thread_parameters;
+    	
     	pthread_mutex_t mutex;
     	pthread_mutex_init(&mutex, NULL);
 
@@ -204,8 +204,8 @@ int main(int argc, char **argv)
     	SLIST_INIT(&head);
 
   	// Start timer thread
-//  	pthread_t tsPthreadId;
-//    	pthread_create(&tsPthreadId, NULL, timestamp, &mutex);
+  	pthread_t tsPthreadId;
+    	pthread_create(&tsPthreadId, NULL, timestamp, &mutex);
     	
     	// Beej's 5.6
     	struct sockaddr_in client_addr; 
@@ -257,8 +257,8 @@ int main(int argc, char **argv)
     	{
         	close(socket_server);
         	// Close out timer thread
-//        	pthread_cancel(tsPthreadId);
-//        	pthread_join(tsPthreadId, EXIT_SUCCESS);
+        	pthread_cancel(tsPthreadId);
+        	pthread_join(tsPthreadId, EXIT_SUCCESS);
         	remove(OUTPUT_FILE);
         	exit(0);
     	}
