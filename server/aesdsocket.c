@@ -83,7 +83,24 @@ void *threadFunc(void *thread_param)
     	lseek(out_put, 0, SEEK_SET);
     	while ((byte_count = read(out_put, buf, BUFFER_SIZE)) > 0) 
     	{
-		send(thread_args->socket_client, buf, byte_count, 0);
+		int dang = send(thread_args->socket_client, buf, byte_count, 0);
+		if (byte_count == -1)
+		{
+		syslog(LOG_ERR, "Error reading");
+		}
+		else
+		{
+		syslog(LOG_INFO, "Reading Success");
+		}
+		if (dang == -1)
+		{
+		syslog(LOG_ERR, "Error sending");
+		}
+		else
+		{
+		syslog(LOG_INFO, "Sending Success");
+		}
+		
     	}
 	 
     	close(out_put);
@@ -137,7 +154,6 @@ int main(int argc, char **argv)
 	if (argc == 2 && strcmp(argv[1], "-d") == 0) 
 	{
 		daemon (0, 0); // LSP Page 174
-		syslog(LOG_INFO, "Begin Crank Daemon");
 	}
 
 
@@ -176,10 +192,10 @@ int main(int argc, char **argv)
     	// From Threading and Linked Lists Slide 10
     	SLIST_HEAD(slisthead, slist_data_s) head;
     	SLIST_INIT(&head);
-    	
-    	// Start timer thread
-//  	pthread_t tsPthreadId;
-//    	pthread_create(&tsPthreadId, NULL, timestamp, &mutex);
+
+  	// Start timer thread
+  	pthread_t tsPthreadId;
+      	pthread_create(&tsPthreadId, NULL, timestamp, &mutex);
                    		 
     	while (cleanShutdown == false)
     	{
@@ -208,14 +224,14 @@ int main(int argc, char **argv)
 		datap = malloc(sizeof(slist_data_t));
             	datap->pthreadId = pthreadId;
            	SLIST_INSERT_HEAD(&head, datap, entries);
-    	}
+    }
 
     	while (cleanShutdown)
     	{
         	close(socket_server);
         	// Close out timer thread
-//        	pthread_cancel(tsPthreadId);
-//        	pthread_join(tsPthreadId, EXIT_SUCCESS);
+        	pthread_cancel(tsPthreadId);
+        	pthread_join(tsPthreadId, EXIT_SUCCESS);
         	remove(OUTPUT_FILE);
         	exit(0);
     	}
