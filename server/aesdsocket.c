@@ -30,22 +30,25 @@ int socket_server;
 int socket_client;
 int option = 1;
 
-// From Threading and Linked Lists Slide 10
-typedef struct slist_data_s slist_data_t;
-struct slist_data_s
-{
-    	pthread_t pthreadId;
-    	SLIST_ENTRY(slist_data_s)
-    	entries;
-};
-
 typedef struct thread_data
 {
   	pthread_mutex_t *mutex;
     	int socket_client;
     	bool thread_complete;
     	char *client_ip4;
+    	pthread_t id;
 } 	thread_data;
+
+// From Threading and Linked Lists Slide 10
+typedef struct slist_data_s slist_data_t;
+slist_data_t *data_node = NULL;
+SLIST_HEAD(slisthead, slist_data_s) head;
+
+struct slist_data_s
+{
+    	thread_data thread_parameters;
+    	SLIST_ENTRY(slist_data_s) entry;
+};
 
 bool cleanShutdown = false;
 
@@ -113,13 +116,15 @@ void *threadFunc(void *thread_param)
     	thread_args->thread_complete = true;
     	
     	close(out_put);
-    	close(thread_args->socket_client);
-
+    	
     	// Mutex unlock
     	pthread_mutex_unlock(thread_args->mutex);
+    	
+    	close(thread_args->socket_client);
 
     	syslog(LOG_INFO, "Closed connection from %s", thread_args->client_ip4);
-    	pthread_exit((void *)EXIT_SUCCESS);
+    	
+    	return thread_args;
 }
 
 void *timestamp(void *mutex)
@@ -155,8 +160,7 @@ int main(int argc, char **argv)
 {
     	int socket_client; // New connection
     	char client_ip4[INET_ADDRSTRLEN];
-
-    	struct thread_data *thread_param;
+//    	struct thread_data *thread_parameters;
     	pthread_mutex_t mutex;
     	pthread_mutex_init(&mutex, NULL);
 
@@ -195,12 +199,8 @@ int main(int argc, char **argv)
 	signal(SIGINT, signal_handler);
 	signal(SIGTERM, signal_handler);
 
-    	// Setup Slist
-    	// From Threading and Linked Lists Slide 10
-    	slist_data_t *datap = NULL;
 
     	// From Threading and Linked Lists Slide 10
-    	SLIST_HEAD(slisthead, slist_data_s) head;
     	SLIST_INIT(&head);
 
   	// Start timer thread
@@ -230,30 +230,27 @@ int main(int argc, char **argv)
        	// Beej's 6.2 	    
         	inet_ntop(AF_INET, &(client_addr.sin_addr), client_ip4, INET_ADDRSTRLEN);        
         	syslog(LOG_INFO, "Accepted connection from %s", client_ip4);
-
-            	// Parameters passed to connection thread
-            	thread_param = malloc(sizeof(struct thread_data));
-            	thread_param->client_ip4 = client_ip4;
-            	thread_param->thread_complete = false;
-            	thread_param->mutex = &mutex;
-            	thread_param->socket_client = socket_client;
-
-            	// Start connection thread
-            	pthread_t pthreadId;
-          	pthread_create(&pthreadId, NULL, threadFunc, (void *)thread_param);
               
 		// Track the threads
-		datap = malloc(sizeof(slist_data_t));
-            	datap->pthreadId = pthreadId;
-           	SLIST_INSERT_HEAD(&head, datap, entries);
+		data_node = (slist_data_t*) malloc(sizeof(slist_data_t));
+		SLIST_INSERT_HEAD(&head, data_node, entry);
+            	data_node->thread_parameters.socket_client = socket_client;
+		data_node->thread_parameters.thread_complete = false;
+		data_node->thread_parameters.mutex = &mutex;
+
+		pthread_create(&(data_node->thread_parameters.id),	
+			NULL,	
+			threadFunc,	
+			&data_node->thread_parameters);
            	
-           	while (!SLIST_EMPTY(&head))
-           	{
-           		datap = SLIST_FIRST(&head);
-           		pthread_join(datap->pthreadId, EXIT_SUCCESS);
-           		SLIST_REMOVE_HEAD(&head, entries);
-           		free(datap);
-           	}
+           	
+		SLIST_FOREACH(data_node, &head, entry)
+		{
+			pthread_join(data_node->thread_parameters.id, NULL);
+			SLIST_REMOVE(&head, data_node, slist_data_s, entry);
+			free(data_node);
+			break;
+		}
     }
 
     	while (cleanShutdown)
