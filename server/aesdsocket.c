@@ -137,7 +137,7 @@ void *timestamp(void *mutex)
     		// Write time to file
     		int out_put = open(OUTPUT_FILE, O_RDWR | O_APPEND | O_CREAT, 0644);
 
-    		write(out_put, buf, strlen(buf));   	
+//    		write(out_put, buf, strlen(buf));   	
     		close(out_put);
     	
     		// Unlock Mutex for time
