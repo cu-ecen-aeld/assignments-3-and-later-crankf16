@@ -204,14 +204,23 @@ int main(int argc, char **argv)
   	// Start timer thread
   	pthread_t tsPthreadId;
     	pthread_create(&tsPthreadId, NULL, timestamp, &mutex);
+    	
+    	// Beej's 5.6
+    	struct sockaddr_in client_addr; 
+	socklen_t client_addr_size = sizeof(client_addr);
                    		 
     	while (cleanShutdown == false)
     	{
     		// Beej's 5.6
-    		struct sockaddr_in client_addr; 
-		socklen_t client_addr_size = sizeof(client_addr);
-    		socket_client = accept(socket_server, (struct sockaddr *)&client_addr,
-        	    &client_addr_size);
+    		if ((socket_client = accept(socket_server, (struct sockaddr *)&client_addr,
+        	    &client_addr_size)) < 0)
+        	    {
+        	    	syslog(LOG_ERR, "Problem accepting");
+        	    }
+        	    else
+        	    {
+        	    	syslog(LOG_INFO, "No problem accepting");
+        	    }
         	    
        	// Beej's 6.2 	    
         	char client_ip4[INET_ADDRSTRLEN]; 
