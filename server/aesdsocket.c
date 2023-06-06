@@ -24,6 +24,7 @@
 
 #define PORT 9000
 #define OUTPUT_FILE "/var/tmp/aesdsocketdata"
+//#define OUTPUT_FILE "/dev/aesdchar"
 #define BUFFER_SIZE 1994
 
 int socket_server;
@@ -70,7 +71,7 @@ void *threadFunc(void *thread_param)
     	int out_put = open(OUTPUT_FILE, O_RDWR | O_APPEND | O_CREAT, 0644);
 
     	// Mutex lock
-    	pthread_mutex_lock(thread_args->mutex);
+//    	pthread_mutex_lock(thread_args->mutex);
     	lseek(out_put, 0, SEEK_END);
 
     	// Receive the string
@@ -84,16 +85,20 @@ void *threadFunc(void *thread_param)
 			break;
 		}
     	}
+    	
+    	// Mutex unlock
+//    	pthread_mutex_unlock(thread_args->mutex);
 
     	// Write the string back
     	lseek(out_put, 0, SEEK_SET);
     	
-    	char *buf_read = (char *)malloc(BUFFER_SIZE); // outgoing buffer
+    	syslog(LOG_INFO, "Pre While Read");
     	
-    	while ((byte_count_out = read(out_put, buf_read, BUFFER_SIZE)) > 0) 
+    	while ((byte_count_out = read(out_put, buf, BUFFER_SIZE)) > 0) 
     	{
-		int dang = send(thread_args->socket_client, buf_read, byte_count_out, 0);
-		if (byte_count == -1)
+		syslog(LOG_INFO, "Made it here");
+		int dang = send(thread_args->socket_client, buf, byte_count_out, 0);
+		if (byte_count_out == -1)
 		{
 		syslog(LOG_ERR, "Error reading");
 		}
@@ -107,7 +112,7 @@ void *threadFunc(void *thread_param)
 		}
 		else
 		{
-		syslog(LOG_INFO, "Sending:%s!", buf_read);
+		syslog(LOG_INFO, "Sending:%s!", buf);
 		}
 		
     	}
@@ -115,7 +120,7 @@ void *threadFunc(void *thread_param)
     	close(out_put);
     	
     	// Mutex unlock
-    	pthread_mutex_unlock(thread_args->mutex);
+    	//pthread_mutex_unlock(thread_args->mutex);
     	
     	close(thread_args->socket_client);
 
@@ -138,16 +143,16 @@ void *timestamp(void *mutex)
     		strftime(buf, sizeof(buf), "timestamp:%a, %d %b %y %T %z\n", tm);
     		
     		// Lock mutex for time
-    		pthread_mutex_lock(mutex);
+//    		pthread_mutex_lock(mutex);
 
     		// Write time to file
-    		int out_put = open(OUTPUT_FILE, O_RDWR | O_APPEND | O_CREAT, 0644);
+//    		int out_put = open(OUTPUT_FILE, O_RDWR | O_APPEND | O_CREAT, 0644);
 
-    		write(out_put, buf, strlen(buf));   	
-    		close(out_put);
+//    		write(out_put, buf, strlen(buf));   	
+//    		close(out_put);
     	
     		// Unlock Mutex for time
-    		pthread_mutex_unlock(mutex);
+//    		pthread_mutex_unlock(mutex);
     		
     	}
     	return mutex;
