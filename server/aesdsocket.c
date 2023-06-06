@@ -23,8 +23,8 @@
 #include <sys/queue.h> 
 
 #define PORT 9000
-#define OUTPUT_FILE "/var/tmp/aesdsocketdata"
-//#define OUTPUT_FILE "/dev/aesdchar"
+//#define OUTPUT_FILE "/var/tmp/aesdsocketdata"
+#define OUTPUT_FILE "/dev/aesdchar"
 #define BUFFER_SIZE 1994
 
 int socket_server;
