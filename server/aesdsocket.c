@@ -94,8 +94,11 @@ void *threadFunc(void *thread_param)
     	
     	syslog(LOG_INFO, "Pre While Read");
     	
-    	while ((byte_count_out = read(out_put, buf, BUFFER_SIZE)) > 0) 
+    	off_t file_posit = 0;
+    	
+    	while ((byte_count_out = pread(out_put, &buf, BUFFER_SIZE, file_posit)) > 0) 
     	{
+		file_posit += byte_count_out;
 		syslog(LOG_INFO, "Made it here");
 		int dang = send(thread_args->socket_client, buf, byte_count_out, 0);
 		if (byte_count_out == -1)
