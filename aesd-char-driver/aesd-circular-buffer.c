@@ -31,11 +31,6 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
     size_t offset = buffer->out_offs;
     size_t buffer_size = sizeof(buffer->entry) / sizeof(buffer->entry[0]);
     size_t posit = 0;
-
-    if ((buffer->in_offs == buffer->out_offs) && !buffer->full) 
-    {
-    	return NULL;
-    }
     
     if (buffer->full) 
     {

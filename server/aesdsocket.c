@@ -66,20 +66,19 @@ void *threadFunc(void *thread_param)
     	int byte_count;          	// number of bytes received
     	int byte_count_out;
     	char buf[BUFFER_SIZE]; 	// incoming buffer
-    	memset(&buf, 0, BUFFER_SIZE);
     	thread_data *thread_args = (thread_data *)thread_param;
 
     	int out_put = open(OUTPUT_FILE, O_RDWR | O_APPEND | O_CREAT, 0644);
 
     	// Mutex lock
 //    	pthread_mutex_lock(thread_args->mutex);
-//    	lseek(out_put, 0, SEEK_END);
+    	lseek(out_put, 0, SEEK_END);
 
     	// Receive the string
     	while ((byte_count = recv(thread_args->socket_client, buf, BUFFER_SIZE - 1, 0)) > 0)
     	{
 		syslog(LOG_INFO, "Read: %s", buf);
-		write(out_put, &buf, byte_count);       
+		write(out_put, buf, byte_count);       
 		// Find the end of a packet
 		if (buf[byte_count - 1] == '\n') 
 		{
@@ -91,7 +90,7 @@ void *threadFunc(void *thread_param)
 //    	pthread_mutex_unlock(thread_args->mutex);
 
     	// Write the string back
-//    	lseek(out_put, 0, SEEK_SET);
+    	lseek(out_put, 0, SEEK_SET);
     	
     	syslog(LOG_INFO, "Pre While Read");
     	
