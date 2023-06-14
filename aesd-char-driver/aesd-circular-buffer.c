@@ -10,11 +10,9 @@
 
 #ifdef __KERNEL__
 #include <linux/string.h>
-#include <linux/slab.h>
 #else
 #include <string.h>
 #endif
-
 #include "aesd-circular-buffer.h"
 
 /**
@@ -30,26 +28,21 @@
 struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct aesd_circular_buffer *buffer,
             size_t char_offset, size_t *entry_offset_byte_rtn )
 {
-    	int buffer_size= buffer->entry[buffer->in_offs].size;
-    	int offset = buffer->in_offs;
-    	int x;
-  	for (x=0; x < AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED; x++)                                       
+    size_t offset = buffer->out_offs;
+    size_t buffer_size = sizeof(buffer->entry) / sizeof(buffer->entry[0]);
+    size_t posit = 0;
+
+    while (offset != buffer->in_offs) 
+    {
+    	if (char_offset < posit + buffer->entry[offset].size) 
     	{
-    
-    		if(char_offset <= (buffer_size - 1))	      
-        	{
-        
-        		*entry_offset_byte_rtn = char_offset-(buffer_size - buffer->entry[offset].size);
-         		return &buffer->entry[offset];
-        	}
-       	 else if(++offset == AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED)  
-          	{
-               	offset = 0;
-          	}
-           
-           	buffer_size += buffer->entry[offset].size;
+            *entry_offset_byte_rtn = char_offset - posit;
+            return &buffer->entry[offset];
         }
-    	return NULL;
+        posit += buffer->entry[offset].size;
+        offset = (offset + 1) % buffer_size;
+    }
+    return NULL;
 }
 
 /**
@@ -59,6 +52,7 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
 * Any necessary locking must be handled by the caller
 * Any memory referenced in @param add_entry must be allocated by and/or must have a lifetime managed by the caller.
 */
+
 const char *aesd_circular_buffer_add_entry(struct aesd_circular_buffer *buffer, const struct aesd_buffer_entry *add_entry)
 {
     	buffer->entry[buffer->in_offs] = *add_entry;
@@ -79,6 +73,7 @@ const char *aesd_circular_buffer_add_entry(struct aesd_circular_buffer *buffer, 
     	}
     	return NULL;
 }
+
 
 /**
 * Initializes the circular buffer described by @param buffer to an empty struct

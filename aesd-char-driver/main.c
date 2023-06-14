@@ -191,8 +191,36 @@ ssize_t aesd_write(struct file *filp, const char __user *buf, size_t count,
     
     return retval;
 }
+
+
+loff_t aesd_llseek(struct file *filp, loff_t off, int whence)
+{
+	loff_t newpos;
+
+	switch(whence) {
+	  case 0: /* SEEK_SET */
+		newpos = off;
+		break;
+
+	  case 1: /* SEEK_CUR */
+		newpos = filp->f_pos + off;
+		break;
+
+	  case 2: /* SEEK_END */
+		return -EINVAL;
+		break;
+
+	  default: /* can't happen */
+		return -EINVAL;
+	}
+	if (newpos < 0) return -EINVAL;
+	filp->f_pos = newpos;
+	return newpos;
+}
+
 struct file_operations aesd_fops = {
     .owner =    THIS_MODULE,
+    .llseek =   aesd_llseek,
     .read =     aesd_read,
     .write =    aesd_write,
     .open =     aesd_open,
@@ -212,6 +240,7 @@ static int aesd_setup_cdev(struct aesd_dev *dev)
     }
     return err;
 }
+
 
 
 int aesd_init_module(void)
@@ -259,7 +288,6 @@ void aesd_cleanup_module(void)
     mutex_destroy(&aesd_device.lock);
     unregister_chrdev_region(devno, 1);
 }
-
 
 
 module_init(aesd_init_module);
