@@ -199,26 +199,28 @@ loff_t aesd_llseek(struct file *filp, loff_t off, int whence)
 	loff_t newpos;
 	struct aesd_dev *dev;
     	dev = filp->private_data;
-    	if (mutex_lock_interruptible(&dev->lock)) {
+    	if (mutex_lock_interruptible(&dev->lock)) 
+    	{
 		return -ERESTARTSYS;
     	}
 
-	switch(whence) {
-	  case 0: /* SEEK_SET */
-		newpos = off;
-		break;
+	switch(whence) 
+	{
+	  	case 0: // SEEK_SET
+			newpos = off;
+			break;
 
-	  case 1: /* SEEK_CUR */
-		newpos = filp->f_pos + off;
-		break;
+	  	case 1: // SEEK_CUR
+			newpos = filp->f_pos + off;
+			break;
 
-	  case 2: /* SEEK_END */
-		return -EINVAL;
-		break;
+	  	case 2: // SEEK_END
+			return -EINVAL;
+			break;
 
-	  default: 
-		return -EINVAL;
-	goto stop;
+	  	default: 
+			return -EINVAL;
+			goto stop;
 	}
 	
 	if (newpos < 0) 
@@ -226,7 +228,6 @@ loff_t aesd_llseek(struct file *filp, loff_t off, int whence)
 		newpos = -EINVAL;
 		goto stop;
 	}
-	
 	filp->f_pos = newpos;
 	
 stop:
@@ -290,8 +291,6 @@ static int aesd_setup_cdev(struct aesd_dev *dev)
     return err;
 }
 
-
-
 int aesd_init_module(void)
 {
     dev_t dev = 0;
@@ -337,7 +336,6 @@ void aesd_cleanup_module(void)
     mutex_destroy(&aesd_device.lock);
     unregister_chrdev_region(devno, 1);
 }
-
 
 module_init(aesd_init_module);
 module_exit(aesd_cleanup_module);
