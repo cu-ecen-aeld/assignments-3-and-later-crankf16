@@ -13,7 +13,6 @@
 #else
 #include <string.h>
 #endif
-
 #include "aesd-circular-buffer.h"
 
 /**
@@ -29,10 +28,77 @@
 struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct aesd_circular_buffer *buffer,
             size_t char_offset, size_t *entry_offset_byte_rtn )
 {
-    /**
-    * TODO: implement per description
-    */
+    size_t offset = buffer->out_offs;
+    size_t buffer_size = sizeof(buffer->entry) / sizeof(buffer->entry[0]);
+    size_t posit = 0;
+    
+    if (buffer->full) 
+    {
+      	if (char_offset < posit + buffer->entry[offset].size) 
+      	{
+      		*entry_offset_byte_rtn = char_offset - posit;
+        	return &buffer->entry[offset];
+        }
+        posit += buffer->entry[offset].size;
+        offset = (offset + 1) % buffer_size;
+    }
+    
+    while (offset != buffer->in_offs) 
+    {
+    	if (char_offset < posit + buffer->entry[offset].size) 
+    	{
+        	*entry_offset_byte_rtn = char_offset - posit;
+        	return &buffer->entry[offset];
+        }
+        posit += buffer->entry[offset].size;
+        offset = (offset + 1) % buffer_size;
+    }
     return NULL;
+}
+
+size_t aesd_circular_buffer_find_position(struct aesd_circular_buffer *buffer,
+            size_t command_offset, size_t internal_offset)
+{
+    size_t offset = buffer->out_offs;
+    size_t buffer_size = sizeof(buffer->entry) / sizeof(buffer->entry[0]);
+    size_t entry = 0;
+    size_t end_posit = 0; 
+
+    if (buffer->full) {
+        if (command_offset != entry) 
+        {
+            end_posit += buffer->entry[offset].size;
+            offset = (offset + 1) % buffer_size;
+            entry++;
+        } 
+        else 
+        {
+            if (buffer->entry[offset].size >= internal_offset)
+            {
+                end_posit += internal_offset;
+            }	
+            return end_posit;
+        }
+    }
+
+    while (offset != buffer->in_offs) {
+        if (command_offset != entry) 
+        {
+            end_posit += buffer->entry[offset].size;
+            offset = (offset + 1) % buffer_size;
+            entry++;
+        } 
+        else 
+        {
+            if (buffer->entry[offset].size >= internal_offset)
+            {
+                end_posit += internal_offset;
+            }
+	return end_posit;
+        }
+    }
+
+    return end_posit;
 }
 
 /**
@@ -42,12 +108,28 @@ struct aesd_buffer_entry *aesd_circular_buffer_find_entry_offset_for_fpos(struct
 * Any necessary locking must be handled by the caller
 * Any memory referenced in @param add_entry must be allocated by and/or must have a lifetime managed by the caller.
 */
-void aesd_circular_buffer_add_entry(struct aesd_circular_buffer *buffer, const struct aesd_buffer_entry *add_entry)
+
+const char *aesd_circular_buffer_add_entry(struct aesd_circular_buffer *buffer, const struct aesd_buffer_entry *add_entry)
 {
-    /**
-    * TODO: implement per description
-    */
+    	buffer->entry[buffer->in_offs] = *add_entry;
+    	buffer->in_offs = (buffer->in_offs + 1) % AESDCHAR_MAX_WRITE_OPERATIONS_SUPPORTED;
+    	
+    	if(buffer->full)                                                                   
+    	{
+        	buffer->out_offs = buffer->in_offs;
+    	}
+    	
+    	if(buffer->in_offs == buffer->out_offs)                                           
+   	{
+        	buffer->full = true;
+    	}
+    	else
+    	{
+        	buffer->full = false;
+    	}
+    	return NULL;
 }
+
 
 /**
 * Initializes the circular buffer described by @param buffer to an empty struct

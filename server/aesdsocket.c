@@ -8,6 +8,7 @@
 // https://www.geeksforgeeks.org/socket-programming-cc/
 // https://beej.us/guide/bgnet/html/
 
+#define IOCTL "AESDCHAR_IOCSEEKTO:"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -21,6 +22,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include <sys/queue.h> 
+#include "../aesd-char-driver/aesd_ioctl.h"
 
 #define PORT 9000
 //#define OUTPUT_FILE "/var/tmp/aesdsocketdata"
@@ -64,51 +66,67 @@ void signal_handler(int signo)
 void *threadFunc(void *thread_param)
 {
     	int byte_count;          	// number of bytes received
-    	int byte_count_out;
     	char buf[BUFFER_SIZE]; 	// incoming buffer
     	thread_data *thread_args = (thread_data *)thread_param;
-
-    	int out_put = open(OUTPUT_FILE, O_RDWR | O_APPEND | O_CREAT, 0644);
+    	bool ioctl_status = false;
+    	struct aesd_seekto seekto;
+    	char *holder;
+    	int temp;
+    	int x;
 
     	// Mutex lock
 //    	pthread_mutex_lock(thread_args->mutex);
-    	lseek(out_put, 0, SEEK_END);
 
     	// Receive the string
-    	while ((byte_count = recv(thread_args->socket_client, buf, BUFFER_SIZE - 1, 0)) > 0)
+    	byte_count = recv(thread_args->socket_client, buf, BUFFER_SIZE - 1, 0);	
+    	
+    	// Look for IOCTL
+    	for (x = 0; x < sizeof(IOCTL - 1); x++)
+    	{	
+        	if (buf[x] == IOCTL[x])
+        	{
+        	    	ioctl_status = true;
+        	}
+        	else
+        	{
+            		ioctl_status = false;
+            		break;
+        	}
+    	}    	
+
+    	// Allocate memory
+    	holder = (char *)malloc((byte_count + 1) * sizeof(char));
+    	for (x = 0; x <= byte_count; x++)
     	{
-		syslog(LOG_INFO, "Read: %s", buf);
-		write(out_put, buf, byte_count);       
-		// Find the end of a packet
-		if (buf[byte_count - 1] == '\n') 
-		{
-			break;
-		}
+        	holder[x] = buf[x];
     	}
     	
-    	// Mutex unlock
-//    	pthread_mutex_unlock(thread_args->mutex);
+    	FILE *out_put;
+    	out_put = fopen(OUTPUT_FILE, "a+");
 
-    	// Write the string back
-    	lseek(out_put, 0, SEEK_SET);
-    	
+    	// Send to driver
+    	if (ioctl_status == true)
+    	{
+        seekto.write_cmd = atoi(&holder[sizeof(IOCTL) - 1]);
+        seekto.write_cmd_offset = atoi(&holder[sizeof(IOCTL) + 1]);
+        temp = ioctl(fileno(out_put), AESDCHAR_IOCSEEKTO, &seekto);
+        printf("write_cmd = %d, write_cmd_offset = %d, ioctl temp=%d\n", seekto.write_cmd, seekto.write_cmd_offset, temp);
+    	}
+    	else
+    	{
+        	fputs(holder, out_put);
+        	fseek(out_put, 0, SEEK_SET);
+    	}
+    	free(holder);
+
+    	// Read from driver   	
     	syslog(LOG_INFO, "Pre While Read");
     	
-    	off_t file_posit = 0;
-    	
-    	while ((byte_count_out = pread(out_put, &buf, BUFFER_SIZE, file_posit)) > 0) 
+    	memset(buf, 0, BUFFER_SIZE * sizeof(buf[0]));
+    	while (fgets(buf, BUFFER_SIZE, out_put) != NULL)
     	{
-		file_posit += byte_count_out;
 		syslog(LOG_INFO, "Made it here");
-		int dang = send(thread_args->socket_client, buf, byte_count_out, 0);
-		if (byte_count_out == -1)
-		{
-		syslog(LOG_ERR, "Error reading");
-		}
-		else
-		{
-		syslog(LOG_INFO, "Reading Success");
-		}
+		int dang = send(thread_args->socket_client, buf, strlen(buf), 0);
 		if (dang == -1)
 		{
 		syslog(LOG_ERR, "Error sending");
@@ -116,11 +134,10 @@ void *threadFunc(void *thread_param)
 		else
 		{
 		syslog(LOG_INFO, "Sending:%s!", buf);
-		}
-		
+		}		
     	}
     	
-    	close(out_put);
+    	fclose(out_put);
     	
     	// Mutex unlock
     	//pthread_mutex_unlock(thread_args->mutex);
